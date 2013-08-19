@@ -42,10 +42,23 @@ class Tx_Flux_ViewHelpers_Widget_Controller_GridController extends Tx_Fluid_Core
 	protected $row = array();
 
 	/**
-	 * @param array $grid
+	 * @var Tx_Flux_Service_FluxService
+	 */
+	protected $configurationService;
+
+	/**
+	 * @param Tx_Flux_Service_FluxService $configurationService
 	 * @return void
 	 */
-	public function setGrid($grid) {
+	public function injectConfigurationService(Tx_Flux_Service_FluxService $configurationService) {
+		$this->configurationService = $configurationService;
+	}
+
+	/**
+	 * @param Tx_Flux_Form_Container_Grid $grid
+	 * @return void
+	 */
+	public function setGrid(Tx_Flux_Form_Container_Grid $grid) {
 		$this->grid = $grid;
 	}
 
@@ -58,38 +71,14 @@ class Tx_Flux_ViewHelpers_Widget_Controller_GridController extends Tx_Fluid_Core
 	}
 
 	/**
-	 * @return void
-	 */
-	protected function assignGridVariables() {
-		foreach ($this->grid as $index => $columns) {
-			$this->grid[$index]['totalColumnCount'] = array();
-			foreach ($columns as $columnIndex => $column) {
-				$add = (1 + ($column['colspan'] - 1));
-				for ($i = 0; $i < $add; $i++) {
-					array_push($this->grid[$index]['totalColumnCount'], 1);
-				}
-				if (isset($column['areas']) === TRUE) {
-					foreach ($column['areas'] as $areaIndex => $area) {
-						$this->grid[$index][$columnIndex]['areas'][$areaIndex]['md5'] = md5(implode('', $this->row) . $area['name']);
-					}
-				}
-				$this->grid[$index][$columnIndex]['md5'] = md5(implode('', $this->row) . $column['name']);
-			}
-			if (Tx_Flux_Utility_Version::assertCoreVersionIsBelowSixPointZero() === TRUE) {
-				unset($this->grid[$index]['totalColumnCount']);
-			}
-		}
-	}
-
-	/**
 	 * @return string
 	 */
 	public function indexAction() {
-		$this->assignGridVariables();
 		$this->view->assign('grid', $this->grid);
 		$this->view->assign('row', $this->row);
-		if (Tx_Flux_Utility_Version::assertCoreVersionIsBelowSixPointZero() === TRUE) {
-			$this->view->setTemplatePathAndFilename(t3lib_extMgm::extPath('flux', 'Resources/Private/Templates/ViewHelpers/Widget/Grid/Legacy.html'));
-		}
+		$paths = $this->configurationService->getViewConfigurationForExtensionName('flux');
+		$templateRootPath = TRUE === isset($paths['templateRootPath']) ? $paths['templateRootPath'] : NULL;
+		$templatePathAndFilename = Tx_Flux_Utility_Resolve::resolveWidgetTemplateFileBasedOnTemplateRootPathAndEnvironment($templateRootPath);
+		$this->view->setTemplatePathAndFilename($templatePathAndFilename);
 	}
 }

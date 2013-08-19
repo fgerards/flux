@@ -9,6 +9,9 @@
 		<label index="tt_content.tx_flux_container">Content Container</label>
 		<label index="tt_content.tx_flux_parent">Parent element</label>
 		<label index="tt_content.tx_flux_column">Content area of parent</label>
+		<label index="tt_content.tx_flux_options">Options</label>
+		<label index="flux.clearValue">Clear value</label>
+		<label index="reference">Reference to content on page '%s' - click to jump to original</label>
 
 		<label index="object.image">Image</label>
 		<label index="object.image.title">Image title/alt text</label>
@@ -35,6 +38,7 @@
 		<label index="object.file.file">File</label>
 
 		<label index="user.no_fields">No fields found in form</label>
+		<label index="user.no_selection">No form selected/configured (enabling Flux debug will produce more information)</label>
 		<label index="user.no_template">No FlexForm source selected. This is usually caused by incorrect template paths being returned by a
 			ConfigurationProvider - in the case of FED/FluidContent/FluidPages this can also be caused by not having selected a page template
 			or Fluid content element type, which can be considered a safe "error" that is only reported because debug mode is enabled in Flux.
@@ -44,6 +48,9 @@
 		<label index="tt_content.tx_flux_container">Content Container</label>
 		<label index="tt_content.tx_flux_parent">Übergeordnetes Element</label>
 		<label index="tt_content.tx_flux_column">Übergeordneter Inhaltsbereich</label>
+		<label index="tt_content.tx_flux_options">Optionen</label>
+		<label index="flux.clearValue">Clear value</label>
+		<label index="reference">Reference to content on page '%s' - click to jump to original</label>
 
 		<label index="object.image">Bild</label>
 		<label index="object.image.title">Bild title/alt Text</label>
@@ -70,6 +77,7 @@
 		<label index="object.file.file">Datei</label>
 
 		<label index="user.no_fields">Keine Felder in diesem Formular</label>
+		<label index="user.no_selection">Kein Formular ausgewählt/konfiguriert (Aktivieren des Flux Debug Modus wird mehr Aufschluss geben)</label>
 		<label index="user.no_template">Keine FlexForm Quelle vorhanden. Dies wird in der Regel durch von einem ConfigurationProvider falsch zurückgegebene
 			Template Pfade verursacht - im Falle von FED/FluidContent/FluidPages kann dies auch an einem nicht gewählten Seiten Template oder FCE liegen,
 			was nur wegen des aktivierten Debug Modus in Flux gemeldet wird und kein Problem darstellt. Die Parameter, die zu diesem Fehler führten,

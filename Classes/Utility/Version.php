@@ -33,15 +33,6 @@
 class Tx_Flux_Utility_Version {
 
 	/**
-	 * check for versions of TYPO3 which do not consistently pass $fieldName
-	 *
-	 * @return boolean
-	 */
-	public static function assertHasFixedFlexFormFieldNamePassing() {
-		return self::assertCoreVersionIsAtLeastSixPointZero();
-	}
-
-	/**
 	 * @return boolean
 	 */
 	public static function assertCoreVersionIsBelowSixPointZero() {
@@ -55,6 +46,22 @@ class Tx_Flux_Utility_Version {
 	public static function assertCoreVersionIsAtLeastSixPointZero() {
 		$version = explode('.', TYPO3_version);
 		return ($version[0] >= 6);
+	}
+
+	/**
+	 * @param string $extensionKey
+	 * @param integer $majorVersion
+	 * @param integer $minorVersion
+	 * @param integer $bugfixVersion
+	 * @return boolean
+	 */
+	public static function assertExtensionVersionIsAtLeastVersion($extensionKey, $majorVersion, $minorVersion = 0, $bugfixVersion = 0) {
+		if (FALSE === t3lib_extMgm::isLoaded($extensionKey)) {
+			return FALSE;
+		}
+		$extensionVersion = t3lib_extMgm::getExtensionVersion($extensionKey);
+		list ($major, $minor, $bugfix) = explode('.', $extensionVersion);
+		return ($majorVersion <= $major && $minorVersion <= $minor && $bugfixVersion <= $bugfix);
 	}
 
 }

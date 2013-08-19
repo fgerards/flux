@@ -39,10 +39,24 @@ class Tx_Flux_ViewHelpers_Content_GetViewHelper extends Tx_Fluid_Core_ViewHelper
 	protected $configurationService;
 
 	/**
+	 * @var Tx_Extbase_Configuration_ConfigurationManagerInterface
+	 */
+	protected $configurationManager;
+
+	/**
 	 * @param Tx_Flux_Service_FluxService $configurationService
+	 * @return void
 	 */
 	public function injectConfigurationService(Tx_Flux_Service_FluxService $configurationService) {
 		$this->configurationService = $configurationService;
+	}
+
+	/**
+	 * @param Tx_Extbase_Configuration_ConfigurationManagerInterface $configurationManager
+	 * @return void
+	 */
+	public function injectConfigurationManager(Tx_Extbase_Configuration_ConfigurationManagerInterface $configurationManager) {
+		$this->configurationManager = $configurationManager;
 	}
 
 	/**
@@ -56,6 +70,7 @@ class Tx_Flux_ViewHelpers_Content_GetViewHelper extends Tx_Fluid_Core_ViewHelper
 		$this->registerArgument('sortDirection', 'string', 'Optional sort direction of content elements', FALSE, 'ASC');
 		$this->registerArgument('as', 'string', 'Variable name to register, then render child content and insert all results as an array of records', FALSE);
 		$this->registerArgument('loadRegister', 'array', 'List of LOAD_REGISTER variable');
+		$this->registerArgument('render', 'boolean', 'Optional returning variable as original table rows', FALSE, TRUE);
 	}
 
 	/**
@@ -66,7 +81,7 @@ class Tx_Flux_ViewHelpers_Content_GetViewHelper extends Tx_Fluid_Core_ViewHelper
 	public function render() {
 		$loadRegister = FALSE;
 		if (empty($this->arguments['loadRegister']) === FALSE) {
-			$this->contentObject->cObjGetSingle('LOAD_REGISTER', $this->arguments['loadRegister']);
+			$this->configurationManager->getContentObject()->cObjGetSingle('LOAD_REGISTER', $this->arguments['loadRegister']);
 			$loadRegister = TRUE;
 		}
 		$record = $this->templateVariableContainer->get('record');
@@ -80,18 +95,9 @@ class Tx_Flux_ViewHelpers_Content_GetViewHelper extends Tx_Fluid_Core_ViewHelper
 		$conditions = "((tx_flux_column = '" . $area . ':' . $localizedUid . "')
 			OR (tx_flux_parent = '" . $localizedUid . "' AND (tx_flux_column = '" . $area . "' OR tx_flux_column = '" . $area . ':' . $localizedUid . "')))
 			AND deleted = 0 AND hidden = 0";
-		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'tt_content', $conditions, 'uid', $order, $limit);
-		$elements = array();
-		while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
-			$conf = array(
-				'tables' => 'tt_content',
-				'source' => $row['uid'],
-				'dontCheckPid' => 1
-			);
-			array_push($elements, $GLOBALS['TSFE']->cObj->RECORDS($conf));
-		}
-		$GLOBALS['TYPO3_DB']->sql_free_result($res);
-		if (FALSE === isset($this->arguments['as'])) {
+		$rows = (array) $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'tt_content', $conditions, 'uid', $order, $limit);
+		$elements = FALSE === (boolean) $this->arguments['render'] ? $rows : $this->getRenderedRecords($rows);
+		if (TRUE === empty($this->arguments['as'])) {
 			$content = $elements;
 		} else {
 			$as = $this->arguments['as'];
@@ -107,9 +113,30 @@ class Tx_Flux_ViewHelpers_Content_GetViewHelper extends Tx_Fluid_Core_ViewHelper
 			}
 		}
 		if ($loadRegister) {
-			$this->contentObject->cObjGetSingle('RESTORE_REGISTER', '');
+			$this->configurationManager->getContentObject()->cObjGetSingle('RESTORE_REGISTER', '');
 		}
 		return $content;
+	}
+
+
+	/**
+	 * This function renders an array of tt_content record into an array of rendered content
+	 * it returns a list of elements rendered by typoscript RECORDS function
+	 *
+	 * @param array $rows database rows of records (each item is a tt_content table record)
+	 * @return array
+	 */
+	protected function getRenderedRecords($rows) {
+		$elements = array();
+		foreach ($rows as $row) {
+			$conf = array(
+				'tables' => 'tt_content',
+				'source' => $row['uid'],
+				'dontCheckPid' => 1
+			);
+			array_push($elements, $this->configurationManager->getContentObject()->RECORDS($conf));
+		}
+		return $elements;
 	}
 
 }

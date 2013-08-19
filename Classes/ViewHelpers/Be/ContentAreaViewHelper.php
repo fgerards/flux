@@ -29,7 +29,16 @@
  * @package Flux
  * @subpackage ViewHelpers\Be
  */
-class Tx_Flux_ViewHelpers_Be_ContentAreaViewHelper extends Tx_Flux_Core_ViewHelper_AbstractBackendViewHelper {
+class Tx_Flux_ViewHelpers_Be_ContentAreaViewHelper extends Tx_Fluid_Core_ViewHelper_AbstractViewHelper {
+
+	/**
+	 * Initialize
+	 * @return void
+	 */
+	public function initializeArguments() {
+		$this->registerArgument('row', 'array', 'Record row', TRUE);
+		$this->registerArgument('area', 'string', 'If placed inside Fluid FCE, use this to indicate which area to insert into');
+	}
 
 	/**
 	 * Render uri
@@ -47,7 +56,6 @@ class Tx_Flux_ViewHelpers_Be_ContentAreaViewHelper extends Tx_Flux_Core_ViewHelp
 		/** @var $dblist tx_cms_layout */
 		$dblist = t3lib_div::makeInstance('tx_cms_layout');
 		$dblist->backPath = $GLOBALS['BACK_PATH'];
-		$dblist->thumbs = $this->imagemode;
 		$dblist->script = 'db_layout.php';
 		$dblist->showIcon = 1;
 		$dblist->setLMargin = 0;
@@ -74,13 +82,19 @@ class Tx_Flux_ViewHelpers_Be_ContentAreaViewHelper extends Tx_Flux_Core_ViewHelp
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('*', 'tt_content', $condition, 'uid', 'sorting ASC');
 		$records = $dblist->getResult($res);
 
+		$fluxColumnId = 'column-' . $area . '-' . $row['uid'] . '-' . $row['pid'] . '-FLUX';
+
 		$this->templateVariableContainer->add('records', $records);
 		$this->templateVariableContainer->add('dblist', $dblist);
+		$this->templateVariableContainer->add('fluxColumnId', $fluxColumnId);
 		$content = $this->renderChildren();
 		$this->templateVariableContainer->remove('records');
 		$this->templateVariableContainer->remove('dblist');
+		$this->templateVariableContainer->remove('fluxColumnId');
 
-		$content = '<div id="column-' . $area . '-' . $row['uid'] . '-' . $row['pid'] . '-FLUX">' . $content . '</div>';
+		if (FALSE === Tx_Flux_Utility_Version::assertExtensionVersionIsAtLeastVersion('gridelements', 2)) {
+			$content = '<div id="column-' . $area . '-' . $row['uid'] . '-' . $row['pid'] . '-FLUX">' . $content . '</div>';
+		}
 
 		return $content;
 	}
